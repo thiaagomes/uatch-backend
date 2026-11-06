@@ -1,0 +1,10 @@
+# Configurações e credenciais locais
+.env
+.env.*
+!.env.example
+
+# Build Java / Maven
+target/
+
+# Arquivos do macOS
+.DS_Store
