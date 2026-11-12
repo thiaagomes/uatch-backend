@@ -40,6 +40,8 @@ Implementado:
 - Respostas estruturadas de erro com ProblemDetail no controller de marcas.
 - Health check pelo Actuator.
 - Banco separado para testes de integração.
+- Migration V2 com catálogo inicial de 127 marcas.
+- Catálogo inicial consultável pelo endpoint GET /api/v1/brands.
 
 Validação mais recente: 63 testes aprovados, sem falhas.
 
@@ -52,6 +54,32 @@ Ainda não implementado:
 - Anúncios e demais funcionalidades do marketplace.
 - Implantação na OCI.
 
+## Escopo do MVP — catálogo por marcas
+
+O primeiro MVP permitirá selecionar e filtrar anúncios por marca,
+sem exigir a escolha de um modelo ou referência do catálogo.
+
+A exigência de marca no cadastro de anúncios será implementada
+quando esse fluxo for desenvolvido.
+
+A migration V2 cadastra uma seleção inicial de 127 marcas,
+abrangendo alta relojoaria, luxo, marcas tradicionais, japonesas,
+independentes e opções acessíveis.
+
+As marcas ficam no banco de dados. A lista é expansível e não
+depende de opções fixas no código mobile.
+
+Se um slug da seleção já existir, a migration preserva o cadastro
+existente, incluindo seu identificador e nome.
+
+Brand e WatchModel permanecem como conceitos separados.
+O código de WatchModel e seu caso de uso ficam preservados,
+mas sua persistência e integração à API estão adiadas.
+
+Quando o catálogo de modelos for retomado, sua associação
+aos anúncios será avaliada sem tornar o modelo obrigatório
+para este primeiro MVP.
+
 ## Arquitetura
 
 O backend segue uma arquitetura de monólito modular, organizado
@@ -63,16 +91,21 @@ em domínio, aplicação, infraestrutura e apresentação.
 Os módulos serão criados conforme as funcionalidades evoluírem.
 Não utilizamos microsserviços nesta etapa.
 
-### Estrutura do projeto
+#### Estrutura do projeto
 
 ```text
 uatch-backend/
-├── .mvn/wrapper/
+├── .gitattributes
+├── .gitignore
+├── .env.example
+├── .mvn/
+│   └── wrapper/
+│       └── maven-wrapper.properties
 ├── compose.yaml
+├── HELP.md
 ├── pom.xml
 ├── mvnw
 ├── mvnw.cmd
-├── .env.example
 ├── src/
 │   ├── main/
 │   │   ├── java/com/uatch/
@@ -98,8 +131,8 @@ uatch-backend/
 │   │   │       │       ├── entity/
 │   │   │       │       │   └── BrandJpaEntity.java
 │   │   │       │       └── repository/
-│   │   │       │           ├── SpringDataBrandRepository.java
-│   │   │       │           └── JpaBrandRepositoryAdapter.java
+│   │   │       │           ├── JpaBrandRepositoryAdapter.java
+│   │   │       │           └── SpringDataBrandRepository.java
 │   │   │       └── presentation/
 │   │   │           ├── controller/
 │   │   │           │   └── BrandController.java
@@ -110,19 +143,32 @@ uatch-backend/
 │   │   │               └── CatalogExceptionHandler.java
 │   │   └── resources/
 │   │       ├── application.yaml
-│   │       └── db/migration/
-│   │           └── V1__create_brands.sql
+│   │       ├── static/
+│   │       ├── templates/
+│   │       └── db/
+│   │           └── migration/
+│   │               ├── V1__create_brands.sql
+│   │               └── V2__seed_watch_brands.sql
 │   └── test/
 │       ├── java/com/uatch/
 │       │   ├── UatchBackendApplicationTests.java
 │       │   └── catalog/
 │       │       ├── domain/
-│       │       ├── application/usecase/
-│       │       ├── infrastructure/persistence/repository/
-│       │       │   └── JpaBrandRepositoryAdapterTest.java
-│       │       └── presentation/controller/
-│       │           ├── BrandControllerTest.java
-│       │           └── BrandControllerIntegrationTest.java
+│       │       │   ├── BrandTest.java
+│       │       │   └── WatchModelTest.java
+│       │       ├── application/
+│       │       │   └── usecase/
+│       │       │       ├── CreateBrandTest.java
+│       │       │       ├── CreateWatchModelTest.java
+│       │       │       └── ListBrandsTest.java
+│       │       ├── infrastructure/
+│       │       │   └── persistence/
+│       │       │       └── repository/
+│       │       │           └── JpaBrandRepositoryAdapterTest.java
+│       │       └── presentation/
+│       │           └── controller/
+│       │               ├── BrandControllerTest.java
+│       │               └── BrandControllerIntegrationTest.java
 │       └── resources/
 │           └── application-test.yaml
 └── README.md
