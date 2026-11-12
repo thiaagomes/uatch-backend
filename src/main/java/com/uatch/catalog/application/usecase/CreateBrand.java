@@ -3,6 +3,7 @@ package com.uatch.catalog.application.usecase;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.uatch.catalog.application.exception.BrandSlugAlreadyExistsException;
 import com.uatch.catalog.application.port.BrandRepository;
 import com.uatch.catalog.domain.Brand;
 
@@ -19,8 +20,7 @@ public final class CreateBrand {
         Brand brand = new Brand(UUID.randomUUID(), name, slug);
 
         if (brandRepository.existsBySlug(brand.getSlug())) {
-            throw new IllegalArgumentException(
-                    "Brand slug already exists");
+            throw new BrandSlugAlreadyExistsException();
         }
 
         brandRepository.save(brand);

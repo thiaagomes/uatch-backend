@@ -1,5 +1,6 @@
 package com.uatch.catalog.application.usecase;
 
+import com.uatch.catalog.application.exception.BrandSlugAlreadyExistsException;
 import com.uatch.catalog.application.port.BrandRepository;
 import com.uatch.catalog.domain.Brand;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +40,7 @@ class CreateBrandTest {
         when(repository.existsBySlug("rolex")).thenReturn(true);
 
         assertThrows(
-                IllegalArgumentException.class,
+                BrandSlugAlreadyExistsException.class,
                 () -> createBrand.execute("Rolex", "rolex")
         );
 
